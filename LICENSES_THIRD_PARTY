@@ -1,0 +1,27 @@
+POLO uses third-party software which may be distributed under different
+licenses. We have attempted to list all of these third party software and
+their licenses below.
+
+You must agree to the terms of these licenses, in addition to the POLO
+source code license, in order to use this software.
+
+--------------------------------------------------
+Third party libraries and files listed by License type
+[Format: Name - URL]
+--------------------------------------------------
+
+MIT / X11 License (or adaptations)
+    * jQuery - http://jquery.org/license
+    * Bootstrap 3 - https://github.com/twbs/bootstrap/blob/master/LICENSE
+    * gijgo.js - https://github.com/atatanasov/gijgo/blob/master/LICENSE
+    * HtmlSanitizer.js - https://github.com/jitbit/HtmlSanitizer/blob/master/LICENSE
+
+New BSD
+    * jquery.sparkline - https://omnipotent.net/jquery.sparkline
+
+Other
+    * Icon - made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a>
+            from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>.
+            Licensed as Free License (with attribution). This license allows you
+            to use for free any of Flaticon contents for your projects as long
+            as they are attributed to their author in the definitive project.

@@ -1,0 +1,65 @@
+class Config(object):
+    DEBUG = False
+    TESTING = False
+    BYPASS_AUTH = False
+    DEMO = False
+
+    SQLALCHEMY_POOL_RECYCLE = 299
+    SQLALCHEMY_POOL_TIMEOUT = 20
+
+    # default connection string for POLO database
+    POLO_CONN = 'USERNAME:PASSWORD@HOSTNAME/DATABASE'
+
+    # default list of connection strings for RockMaker database(s).
+    # these should be indexed same as in the POLO database 'sources' table
+    RM_CONN = {
+        1: 'DSN=ROCKMAKER_1;UID=USERNAME;PWD=PASSWORD;DATABASE=RockMaker',
+        2: 'DSN=ROCKMAKER_2;UID=USERNAME;PWD=PASSWORD;DATABASE=RockMaker'
+    }
+
+    OAUTH2_AUTHORIZATION_BASE_URL = 'https://url_for/authentication-service/v2/authorize'
+    OAUTH2_TOKEN_URL = 'https://url_for/authentication-service/v2/token'
+    OAUTH2_USERPROFILE_URL = 'https://url_for/authentication-service/v2/userinfo'
+    OAUTH2_USERNAME_FIELD = 'username'
+
+
+class ProductionConfig(Config):
+    OAUTH2_CLIENT_ID = "xxx"
+    OAUTH2_CLIENT_SECRET = "xxx"
+
+
+class DevelopmentConfig(Config):
+    DEBUG = True
+    BYPASS_AUTH = False
+    OAUTH2_CLIENT_ID = "xxx"
+    OAUTH2_CLIENT_SECRET = "xxx"
+
+    # list of connection strings for RockMaker database(s) if different from default
+    RM_CONN = {
+        1: 'DSN=local_rockmaker_1;UID=USERNAME;PWD=PASSWORD;DATABASE=RockMaker',
+        2: 'DSN=local_rockmaker_2;UID=USERNAME;PWD=PASSWORD;DATABASE=RockMaker'
+    }
+
+
+class DemoConfig(Config):
+    BYPASS_AUTH = True  # no need for OAUTH2_CLIENT_ID or OAUTH2_CLIENT_SECRET
+    DEMO = True # Demo mode replaces all folder and protein names with "XXXXX"
+
+    # list of connection strings for RockMaker database(s) if different from default
+    RM_CONN = {
+        1: 'DSN=local_rockmaker_1;UID=USERNAME;PWD=PASSWORD;DATABASE=RockMaker',
+        2: 'DSN=local_rockmaker_2;UID=USERNAME;PWD=PASSWORD;DATABASE=RockMaker'
+    }
+
+class TestConfig(Config):
+    TESTING = True
+    POLO_CONN = 'USERNAME:PASSWORD@HOSTNAME/DATABASE'
+    RM_CONN = {
+        1: 'DSN=ROCKMAKER_1;UID=USERNAME;PWD=PASSWORD;DATABASE=RockMaker',
+        2: 'DSN=ROCKMAKER_2;UID=USERNAME;PWD=PASSWORD;DATABASE=RockMaker'
+    }
+    OAUTH2_AUTHORIZATION_BASE_URL = 'https://url_for/authentication-service/v2/authorize'
+    OAUTH2_TOKEN_URL = 'https://url_for/authentication-service/v2/token'
+    OAUTH2_USERPROFILE_URL = 'https://url_for/authentication-service/v2/userinfo'
+    OAUTH2_CLIENT_ID = "xxx"
+    OAUTH2_CLIENT_SECRET = "xxx"

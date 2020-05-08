@@ -1,0 +1,2 @@
+graft polo
+global-exclude *.pyc

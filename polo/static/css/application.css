@@ -1,0 +1,403 @@
+html, body {
+    height: 100vh;
+}
+
+.left {
+//  background-color: #ABC;
+}
+
+.middle {
+  background-color: #BCA;
+}
+
+.right {
+  background-color: #CAB;
+}
+
+.main-wrapper {
+  height: 100%
+}
+
+.section {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-y: scroll;
+  //justify-content: center;
+  //align-items: center;
+}
+
+
+.panel-heading .accordion-toggle:after {
+    /* symbol for "opening" panels */
+    font-family: 'Glyphicons Halflings';  /* essential for enabling glyphicon */
+    content: "\e113"; /* chevron-up */
+    float: right;        /* adjust as needed */
+    color: grey;         /* adjust as needed */
+}
+.panel-heading .accordion-toggle.collapsed:after {
+    /* symbol for "collapsed" panels */
+    content: "\e114";    /* chevron-down */
+}
+
+div#settings {
+    border: 1px solid blue;
+    margin: 20px;
+    padding: 10px;
+}
+
+#load_checked {
+    font-weight: bold;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+
+#clear_grid {
+    background: #F66;
+    font-weight: bold;
+}
+
+#list.tab-pane, #timecourse.tab-pane{
+    overflow-y: scroll;
+}
+
+#current_image {
+    height: 85vh;
+}
+
+div#help {
+    overflow-y: scroll;
+}
+
+#about {
+    font-size: 150%;
+    padding: 20px;
+}
+
+.polo-setting {
+    margin: 10px;
+    float: left;
+}
+
+.only_faves {
+    color: red;
+}
+
+ul.gj-list-bootstrap li {
+    line-height: normal;
+}
+
+#image_navigation {
+    height: 87vh;
+    float: right;
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    line-height: 44vh;
+    text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;
+    opacity: 0.3;
+    -khtml-opacity: 0.3;
+    -moz-opacity: 0.3;
+    -webkit-opacity: 0.3;
+    filter: alpha(opacity=30);
+    visibility: visible;
+}
+
+#image-container {
+    position: relative;
+}
+
+#current_image_crystal_score {
+    position: absolute;
+    font-size: 3em;
+    left: 10px;
+    top: 10px;
+    background-color: white;
+    padding: 0 10px;
+    opacity: 40%;
+    -khtml-opacity: 0.4;
+    -moz-opacity: 0.4;
+    -webkit-opacity: 0.4;
+    filter: alpha(opacity=40);
+    font-weight: bold;
+}
+
+#current_info {
+    height: 3em;
+    padding: 3px;
+    //border: 1px solid red;
+}
+
+#current_image_plate_path {
+}
+
+#current_image_well_drop{
+    position: absolute;
+    font-size: 2em;
+    left: 10px;
+    bottom: 10px;
+    background-color: white;
+    padding: 0 10px;
+    opacity: 40%;
+    -khtml-opacity: 0.4;
+    -moz-opacity: 0.4;
+    -webkit-opacity: 0.4;
+    filter: alpha(opacity=40);
+    font-weight: bold;}
+
+
+#image_navigation div {
+    height: 30%;
+    text-align: center;
+    cursor:pointer;
+    margin: 10px;
+    vertical-align: middle;
+    font-size: 9em;
+    color: #888;
+}
+
+div#favorite {
+    position: absolute;
+    color: red;
+    opacity: 0.7;
+    -khtml-opacity: 0.7;
+    -moz-opacity: 0.7;
+    -webkit-opacity: 0.7;
+    filter: alpha(opacity=70);
+    visibility: visible;
+    text-shadow: 1px 0 0 #FFF, 0 -1px 0 #FFF, 0 1px 0 #FFF, -1px 0 0 #FFF;
+    padding: 5px;
+    font-size: 2em;
+    display: none;
+}
+
+#set-favorite span.favorite {
+    color: red;
+}
+
+#grid tbody td, #timecourse_grid tbody td {
+    vertical-align: middle;
+}
+
+.bignum {
+    font-size: large;
+}
+
+.high-score {
+    color: green;
+    font-weight: bold;
+}
+
+.medium-score {
+    color: black;
+    font-weight: bold;
+}
+
+.low-score {
+    color: red;
+    font-weight: bold;
+}
+
+#tree {
+    line-height: 12px;
+    overflow-y: auto;
+}
+
+#sidebar {
+    position: relative;
+}
+
+div#search-area {
+    margin: 10px 0 10px 0;
+    z-index: 10000;
+}
+
+.highlight {
+    background-color: #FFA;
+}
+
+span#login_info {
+    float: right;
+    font-size: 85%;
+    position: relative;
+    opacity: 0.5;
+    -khtml-opacity: 0.5;
+    -moz-opacity: 0.5;
+    -webkit-opacity: 0.5;
+    filter: alpha(opacity=50);
+    visibility: visible;
+}
+
+span#login_info a {
+    text-decoration: none;
+    color: white;
+}
+
+#tree-overlay {
+    background-color: black;
+    opacity: 0.5;
+    -khtml-opacity: 0.5;
+    -moz-opacity: 0.5;
+    -webkit-opacity: 0.5;
+    filter: alpha(opacity=50);
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    z-index: 100;
+    margin-left: -10px;
+}
+
+.loader {
+    border: 16px solid #f3f3f3;
+    border-top: 16px solid #3498db;
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    top: 100px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+/************************************************************************************/
+/* via https://www.jquery-az.com/2-templates-of-bootstrap-tabs-with-customized-css/ */
+.tab .nav-tabs {
+    border-bottom:0 none;
+}
+.tab .nav-tabs li a{
+    position: relative;
+    padding: 15px;
+    color: #666;
+    font-size: 17px;
+    z-index: 1;
+}
+.tab .nav-tabs li a:hover{
+    background:transparent;
+    border:1px solid transparent;
+}
+.tab .nav-tabs li a:before{
+    content: ""; /* this property gives Mobile Safari on iOS problems */
+    width:100%;
+    height:100%;
+    position:absolute;
+    bottom: 8px;
+    left:-2px;
+    background: #eee;
+
+    border: 1px solid #d3d3d3;
+    border-bottom: 0px none;
+    border-radius: 10px 10px 0 2px;
+    transform-origin: left center 0;
+    transform: perspective(4px) rotateX(2deg);
+    z-index:-30;
+}
+.tab .nav-tabs li{
+    margin-right: 1px;
+}
+.tab .nav-tabs li.active a:before{
+    background: #aaa;
+}
+.tab .nav-tabs li.active a,
+.tab .nav-tabs li.active a:focus,
+.tab .nav-tabs li.active a:hover{
+    border:1px solid transparent;
+    background:transparent;
+    color: #ddd;
+    font-weight:700;
+    z-index: 2;
+}
+.tab-content .tab-pane{
+    border-bottom-left-radius:15px;
+    border-bottom-right-radius:15px;
+    border-top-right-radius:15px;
+    border: 1px solid #666;
+    padding: 20px;
+    //background:#ddd;
+    height: 92vh;
+    line-height: 22px;
+}
+.tab-content .tab-pane h4{
+    margin-top: 0;
+    font-weight:700;
+    font-size: 20px;
+}
+@media only screen and (max-width: 767px) {
+    .tab .nav-tabs li a{
+        padding: 15px 10px;
+        font-size: 14px;
+    }
+    .tab .nav-tabs li a:before{
+        bottom: 6px;
+    }
+}
+@media only screen and (max-width: 499px) {
+    .tab .nav-tabs li{
+        width:100%;
+        margin-bottom: 5px;
+        margin-top: 5px;
+    }
+    .tab .nav-tabs li a:before{
+        bottom: 0;
+        transform: none;
+        border-bottom: 1px solid #777;
+    }
+
+}/************************************************************************************/
+
+/* issue with jQuery sparkline tooltip class conflicting with Bootstrap 3 */
+/* fix from https://stackoverflow.com/questions/18894820/jquery-sparklines-and-twitter-bootstrap-3-tooltip-style-overrides */
+.jqstooltip {
+  -webkit-box-sizing: content-box;
+  -moz-box-sizing: content-box;
+  box-sizing: content-box;
+}
+
+@keyframes highlight {
+    0% {
+        background: #ffff99;
+    }
+    100% {
+        background: none;
+    }
+}
+
+.highlight {
+    animation: highlight 2s;
+}
+
+a.accordion-toggle {
+    text-decoration: none;
+}
+
+div.medium-image {
+    position: relative;
+}
+
+div.medium-image div.image-info-top, div.medium-image div.image-info-bottom {
+    position: absolute;
+    text-align: center;
+    width: 100%;
+    padding: 5px;
+}
+
+div.medium-image div.image-info-top span, div.medium-image div.image-info-bottom span {
+    background-color: white;
+    opacity: 0.7;
+    padding: 5px;
+}
+
+div.medium-image div.image-info-top {
+    top: 0;
+}
+
+div.medium-image div.image-info-bottom {
+    bottom: 0;
+}

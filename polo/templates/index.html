@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>POLO</title>
+
+    <!-- -------------------- jQuery -------------------- -->
+    <script src="/static/js/jquery-3.4.1.min.js"></script>
+
+    <!-- -------------------- jQuery Sparklines --------- -->
+    <script src="/static/js/jquery.sparkline.min.js"></script>
+
+    <!-- -------------------- Bootstrap -------------------- -->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="/static/css/bootstrap-theme.min.css">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="/static/js/bootstrap.min.js"></script>
+
+    <!-- -------------------- GIJGO free-for-commercial-use tools -------------------- -->
+    <link rel="stylesheet" href="/static/css/gijgo.min.css">
+    <script src="/static/js/gijgo.min.js"></script>
+
+    <!-- -------------------- HtmlSanitizer.js -------------------- -->
+    <script src="/static/js/HtmlSanitizer.js"></script>
+
+    <!-- -------------------- this application -------------------- -->
+    <link rel="stylesheet" href="/static/css/application.css">
+    <link rel="stylesheet" href="/static/css/tabs.css">
+    <script src="/static/js/application.js"></script>
+    <script>
+        var folder = '{{ folder }}';
+        var auth_username = '{{ auth_username }}';
+        var plate_ids = '{{ plate_ids }}';
+        var load_source = '{{ load_source }}';
+        var message = '{{ message }}';
+    </script>
+</head>
+<body>
+<div class="main-wrapper">
+    <div class="section left col-xs-3" id="sidebar">
+        <form id="search-plates-form">
+            <div id="search-area" class="input-group input-group-md">
+                <input type="text" class="form-control" id="search-text" aria-describedby="sizing-addon1"
+                       placeholder="Plate numbers, barcodes, or search text"
+                       title="Use quotation marks to group text together">
+                <span class="input-group-btn">
+                <button class="btn btn-primary" type="submit" id="search-button">Search</button>
+                <button class="btn btn-default" type="button" id="clear-search-button">
+                    <!--<span class="glyphicon glyphicon-remove" title="Clear search field and enable tree"></span>-->
+                    <span class="glyphicon glyphicon-folder-open" title="Clear search field and reload folders"></span>
+                </button>
+            </span>
+            </div>
+        </form>
+        <div id="tree"></div>
+        <div id="tree-overlay">
+            <div class="loader"></div>
+        </div>
+        <button type="button" id="load_checked" class="btn btn-primary">
+            Clear list and load checked plates &nbsp;&nbsp;<span class="glyphicon glyphicon-arrow-right"></span>
+        </button>
+    </div>
+    <div class="section middle col-xs-9" id="main">
+        <div class="tab" role="tabpanel">
+            <ul id="tabs">
+                <li><a href="#" name="tab-help"><img src="/favicon.ico" height="20"></a></li>
+                <li><a href="#" name="tab-list">List</a></li>
+                <li><a href="#" name="tab-image">Image</a></li>
+                <li><a href="#" name="tab-timecourse">Timecourse</a></li>
+                <li><a href="#" name="tab-all">All Images</a></li>
+            </ul>
+
+            <div id="content">
+                <div id="tab-help">
+                    {% if demo_mode == True %}
+                    <div class="alert alert-info alert-dismissible" role="alert">
+                        POLO is running in demonstration mode. Names, projects, experimental information will be hidden
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    {% endif %}
+
+                    {% if polo_info != None %}
+                    <div class="alert alert-info alert-dismissible" role="alert">
+                        {{ polo_info }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    {% endif %}
+
+                    {% if polo_warning != None %}
+                    <div class="alert alert-warning alert-dismissible" role="alert">
+                        {{ polo_warning }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    {% endif %}
+
+                    {% if polo_error != None %}
+                    <div class="alert alert-danger alert-dismissible" role="alert">
+                        {{ polo_error }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    {% endif %}
+
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <span id="login_info">
+                                {% if auth_username == 'development' %}
+                                    Logged in as {{ auth_username }}
+                                {% else %}
+                                    <a href="http://{{ polo_path }}?folder={{ auth_username }}"
+                                       title="Click to view only your own plates">Logged in as {{ auth_username }}</a>
+                                    |
+                                    <a href="/auth?method=form">Log in as another user</a>
+                                {% endif %}
+                            </span>
+                            <h3 class="panel-title">Welcome to <b>POLO</b></h3>
+                        </div>
+                        <div class="panel-body">This is the interface to the POLO database, which contains <a
+                                href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0198883">MARCO</a>
+                            scores and metadata for recently acquired RockMaker images, updated frequently using a
+                            local implementation of the model.
+                        </div>
+                    </div>
+
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">
+                                <a class="accordion-toggle" data-toggle="collapse" href="#collapse1">Settings</a>
+                            </h3>
+                        </div>
+                        <div id="collapse1" class="panel-collapse">
+                            <div class="panel-body">
+                                <div class="polo-setting" id="rockmaker">
+                                    Image source (last updated)
+                                    <select id="rockmaker_dropdown" width="350"></select>
+                                </div>
+                                <div class="polo-setting">
+                                    Which score to show for a drop*
+                                    <select id="scoretype_dropdown" width="350">
+                                        <option value="date_imaged" selected>Most recent score</option>
+                                        <option value="crystal">Highest score</option>
+                                    </select>
+                                </div>
+                                <div class="polo-setting">
+                                    Rows per page*
+                                    <select id="numrows_dropdown" width="350">
+                                        <option value="10">10 (good for slow connections)</option>
+                                        <option value="30">30</option>
+                                        <option value="100" selected>100 (default)</option>
+                                        <option value="300">300</option>
+                                    </select>
+                                </div>
+                                <div class="polo-setting">
+                                    Minimum crystal score to show*
+                                    <select id="min_score_dropdown" width="350">
+                                        <option value="0.8">0.8 (most stringent)</option>
+                                        <option value="0.5">0.5</option>
+                                        <option value="0.1">0.1</option>
+                                        <option value="0.0" selected>All scores (least stringent)</option>
+                                    </select>
+                                </div>
+                                <div class="polo-setting">
+                                    Scoring algorithm (# scores)*
+                                    <select id="scorealgo_dropdown" width="350"></select>
+                                </div>
+                                <div style="clear: both; float: right;">* must reload plates to take effect
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">
+                                <a class="accordion-toggle collapsed" data-toggle="collapse" href="#collapse2">Instructions</a>
+                            </h3>
+                        </div>
+                        <div id="collapse2" class="panel-collapse collapse">
+                            <div class="panel-body">
+                                <ul>
+                                    <li>Type "h" to get to the help tab (here)</li>
+                                    {% if folder == None %}
+                                    <li>You can view only your own plates by using a URL like
+                                        {% if auth_username == 'development' %}
+                                        <a href="http://{{polo_path}}?folder=YOUR_USERNAME">http://{{polo_path}}?folder=YOUR_USERNAME</a>
+                                        {% else %}
+                                        <a href="http://{{polo_path}}?folder={{auth_username}}">http://{{polo_path}}?folder={{auth_username}}</a>
+                                        {% endif %}
+                                    </li>
+                                    {% else %}
+                                    <li>You can view all plates by using a URL like
+                                        <a href="http://{{polo_path}}">http://{{polo_path}}</a>
+                                    </li>
+                                    {% endif %}
+                                    <li>
+                                        Peruse the RockMaker tree on the left by using the <span
+                                            class="glyphicon glyphicon-plus"></span> and <span
+                                            class="glyphicon glyphicon-minus"></span> buttons to open and close
+                                        subfolders
+                                    </li>
+                                    <li>
+                                        Searching:
+                                        <ul>
+                                            <li>You can search on plate ID or barcode or experiment name or protein name
+                                            </li>
+                                            <li>A minimum of 3 characters is required, and search is case insensitive
+                                            </li>
+                                            <li>Click on <span class="glyphicon glyphicon-folder-open"></span> to return
+                                                to
+                                                the folder tree view
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        Check boxes for one or more plates, then click the blue button
+                                        below the list. Plates must be checked and visible to get loaded.
+                                    </li>
+                                    <li>
+                                        Use left and right arrows to move between tabs:
+                                        <ul>
+                                            <li>
+                                                <b>List</b>
+                                                <ul>
+                                                    <li>Click on a column header to sort; click again to reverse</li>
+                                                    <li>Click on a row to open that image in single-image mode</li>
+                                                    <li>
+                                                        Download current table as CSV by clicking on "Download table"
+                                                        button at the top of the page
+                                                    </li>
+                                                    <li>Scroll to the bottom to load more rows</li>
+                                                    <li>Type "f" or click on <span
+                                                            class="glyphicon glyphicon-heart"></span> to
+                                                        toggle between showing all drops or only favorites
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <b>Image</b>
+                                                <ul>
+                                                    <li>Use up and down arrows or buttons to move through the list</li>
+                                                    <li>Use the spacebar to toggle the image as a favorite</li>
+                                                    <li>Type right-arrow to get a timecourse from the current drop</li>
+                                                    <li>Manually annotate an image by typing C, P, X, O for clear,
+                                                        precipitate, crystal, other. Or just type D to dispute the
+                                                        score. Case-insensitive.
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <b>Timecourse</b>
+                                                <ul>
+                                                    <li>Click on a row to open the full sized image in a new tab</li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <b>All Images</b>
+                                                <ul>
+                                                    <li>Show all image types such as UV, birefringence, etc. in addition
+                                                        to visible
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">
+                                <a class="accordion-toggle collapsed" data-toggle="collapse" href="#collapse3">Server
+                                    Information</a>
+                            </h3>
+                        </div>
+                        <div id="collapse3" class="panel-collapse collapse">
+                            <div class="panel-body">
+                                <ul>
+                                    {% if demo_mode == True %}
+                                    <li>POLO is running in demonstration mode. Names, projects, experimental information
+                                        will be hidden
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="tab-list">
+                    <div class="panel panel-info">
+                        <div class="panel-body">
+                            Click on a header to sort, click again to reverse; click on a row to
+                            see a large image. Scroll to the bottom to load more images.
+                            <button id="download_grid" class="btn btn-secondary">Download table</button>
+                        </div>
+                    </div>
+                    <table id="grid"></table>
+                </div>
+                <div id="tab-image">
+                    <div id="image-container">
+                        <img id="current_image" src="/static/images/no_image.png">
+                        <div id="current_image_crystal_score"></div>
+                        <div id="current_image_plate_path"></div>
+                        <div id="current_image_well_drop"></div>
+                    </div>
+                    <div id="current_info"></div>
+                    <div id="image_navigation">
+                        <div id="up" title="Previous image (or use keyboard up arrow)">
+                            <span class="glyphicon glyphicon-arrow-up"></span>
+                        </div>
+                        <div id="set-favorite" title="Toggle favorite">
+                            <span class="glyphicon glyphicon-heart"></span>
+                        </div>
+                        <div id="down" title="Next image (or use keyboard down arrow)">
+                            <span class="glyphicon glyphicon-arrow-down"></span>
+                        </div>
+                    </div>
+                </div>
+                <div id="tab-timecourse">
+                    <div>Click anywhere in a row for a full-sized image in a new tab for close inspection.</div>
+                    <div id="timecourse_info"></div>
+                    <table id="timecourse_grid"></table>
+                </div>
+                <div id="tab-all">
+                    <div>Click anywhere in a row for a full-sized image in a new tab for close inspection.</div>
+                    <div id="all-image-types"></div>
+                    <table id="allimage_grid"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
