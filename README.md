@@ -148,7 +148,8 @@ If this doesn't work, try using `pip install ...` instead.
 - POLO has been tested against RockMaker database version 3.15.8.1.
 - All RockMaker database connections should be made using read-only accounts to avoid possible
   database corruption and voiding of your maintenance contract.
-- Changes to the RockMaker database schema may render POLO useless.
+- POLO ignores RockMaker security; the full RockMaker tree is visible.
+- Changes to the RockMaker database schema may render POLO useless, and may occur without advance notice.
 - Formulatrix does not support or recommend use of POLO.
 - Please do not approach Formulatrix with POLO-related questions.
 
