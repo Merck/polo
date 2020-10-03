@@ -75,7 +75,82 @@ sql_all = """
     """
 
 sql_set_sort_order = "SET @sort_dir = %s; SET @pwd_rank = 0;"
-sql_paginated = """
+sql_paginated_without_timecourse = """
+    SELECT CONCAT(CAST(plate_num AS CHAR), ',', CAST(plate_id as CHAR), ',', barcode) as plate_name,
+           ranked.id,
+           plate_id,
+           well_num,
+           CONCAT(row_letter, CAST(column_num AS CHAR))                               as well_name,
+           drop_num,
+           crystal,
+           other,
+           date_imaged                                                                   date_imaged_orig,
+           DATE_FORMAT(date_imaged, "%%m/%%d/%%Y")                                       date_imaged,
+           CONCAT(s.url_prefix, relative_path)                                           url,
+           temperature,
+           (
+             SELECT CAST(GROUP_CONCAT(manual_call ORDER BY disputed_at ASC) AS CHAR)
+             FROM image_scores i,
+                  disputes d
+             WHERE i.id = d.image_score_id
+               AND ranked.id = d.image_score_id
+               AND ranked.source_id = i.source_id
+           )                                                                             disputes
+    FROM (SELECT id,
+                 plate_id,
+                 barcode,
+                 plate_num,
+                 well_num,
+                 row_letter,
+                 column_num,
+                 drop_num,
+                 crystal,
+                 other,
+                 date_imaged,
+                 source_id,
+                 relative_path,
+                 temperature,
+                 @pwd_rank := IF(@current_plate = plate_id AND @current_well = well_num AND @current_drop = drop_num, @pwd_rank + 1, 1) AS pwd_rank,
+                 @current_plate := plate_id,
+                 @current_well := well_num,
+                 @current_drop := drop_num
+          FROM image_scores
+          WHERE source_id = %s
+            AND scored_by = %s
+            AND plate_id IN ({query_placeholders})
+            {temperature_filter}
+            {drop_filter}
+            {score_filter}
+            AND crystal IS NOT NULL
+            AND crystal > {min_score}
+          ORDER BY plate_id, well_num, drop_num, {rank_method} desc
+         ) ranked,
+         sources s
+    WHERE pwd_rank <= 1
+      AND source_id = s.id
+    ORDER BY 
+        CASE WHEN @sort_dir = 'plate_id asc' THEN plate_id END ASC,
+        CASE WHEN @sort_dir = 'plate_id desc' THEN plate_id END DESC,
+        CASE WHEN @sort_dir = 'well_num asc' THEN well_num END ASC,
+        CASE WHEN @sort_dir = 'well_num desc' THEN well_num END DESC,
+        CASE WHEN @sort_dir = 'drop_num asc' THEN drop_num END ASC,
+        CASE WHEN @sort_dir = 'drop_num desc' THEN drop_num END DESC,
+        CASE WHEN @sort_dir = 'barcode asc' THEN barcode END ASC,
+        CASE WHEN @sort_dir = 'barcode desc' THEN barcode END DESC,
+        CASE WHEN @sort_dir = 'crystal asc' THEN crystal END ASC,
+        CASE WHEN @sort_dir = 'crystal desc' THEN crystal END DESC,
+        CASE WHEN @sort_dir = 'other asc' THEN other END ASC,
+        CASE WHEN @sort_dir = 'other desc' THEN other END DESC,
+        CASE WHEN @sort_dir = 'date_imaged asc' THEN date_imaged_orig END ASC,
+        CASE WHEN @sort_dir = 'date_imaged desc' THEN date_imaged_orig END DESC,
+        CASE WHEN @sort_dir = 'temperature asc' THEN temperature END ASC,
+        CASE WHEN @sort_dir = 'temperature desc' THEN temperature END DESC,
+        crystal DESC
+    LIMIT %s
+    OFFSET %s
+"""
+
+sql_paginated_with_timecourse = """
     SELECT CONCAT(CAST(plate_num AS CHAR), ',', CAST(plate_id as CHAR), ',', barcode) as plate_name,
            ranked.id,
            plate_id,

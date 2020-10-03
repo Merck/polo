@@ -4,7 +4,7 @@
 
 //License: MIT https://github.com/jitbit/HtmlSanitizer/blob/master/LICENSE
 
-console.log('Sanitizer loading');
+// console.log('Sanitizer loading');
 
 var HtmlSanitizer = new (function () {
 

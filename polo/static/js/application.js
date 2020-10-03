@@ -52,6 +52,13 @@ $( document ).ready(function() {
         iconsLibrary: 'fontawesome'
     });
 
+    var showsparklines_dropdown = $('#showsparklines_dropdown').dropdown({
+        valueField: 'id',
+        textField: 'name',
+        uiLibrary: 'bootstrap',
+        iconsLibrary: 'fontawesome'
+    });
+
     var tree = $('#tree').tree();
     var grid = $('#grid').grid();
     var timecourse_grid = $('#timecourse_grid').grid();
@@ -206,6 +213,15 @@ $( document ).ready(function() {
         var numrows = sel2.options[sel2.selectedIndex].value;
         var sel3 = document.getElementById('min_score_dropdown');
         var min_score = sel3.options[sel3.selectedIndex].value;
+        var sel4 = document.getElementById('showsparklines_dropdown');
+        var show_sparklines = sel4.options[sel4.selectedIndex].value;
+        if (show_sparklines=="Yes") {
+            var crystal_template = '<div class=bignum>{crystal}</div><span class="inlinesparkline" values="{all_crystal_scores}"></span>';
+            var other_template = '<div class=bignum>{other}</div><span class="inlinesparkline" values="{all_other_scores}"></span>';
+        } else {
+            var crystal_template = '<div class=bignum>{crystal}</div>';
+            var other_template = '<div class=bignum>{other}</div>';
+        }
 
         faves = []; // clear favorites
 
@@ -215,7 +231,8 @@ $( document ).ready(function() {
                                '&source_id=' + source_id +
                                '&algo_name=' + encodeURIComponent(algo_name) +
                                '&plate_ids='+encodeURIComponent(plate_ids) +
-                               '&min_score=' + min_score,
+                               '&min_score=' + min_score +
+                               '&timecourse=' + (show_sparklines=="Yes"),
             selectionType: 'single',
             selectionMethod: 'basic',
             pager: { limit: numrows, sizes: [30, 100, 300] },
@@ -230,8 +247,8 @@ $( document ).ready(function() {
                 { field: 'temperature', title: '&deg;C', width: 40, filterable: true, cssClass: 'bignum' },
                 { field: 'well_name', title: 'Well', width: 70, cssClass: 'bignum' },
                 { field: 'drop_num', title: 'Drop', width: 70, filterable: true, cssClass: 'bignum' },
-                { field: 'crystal', title: 'Crystal', width: 70, tmpl: '<div class=bignum>{crystal}</div><span class="inlinesparkline" values="{all_crystal_scores}"></span>' },
-                { field: 'other', title: 'Other', width: 70, tmpl: '<div class=bignum>{other}</div><span class="inlinesparkline" values="{all_other_scores}"></span>' },
+                { field: 'crystal', title: 'Crystal', width: 70, tmpl: crystal_template },
+                { field: 'other', title: 'Other', width: 70, tmpl: other_template },
                 { field: 'url', title: 'Thumbnail', width: 130, sortable: false, tmpl: '<img oldsrc="{url}" src="{url}" width=120>'},
                 { field: 'date_imaged', title: 'Date Imaged', width: 120, type: 'date' },
                 { field: 'conditions', title: 'Conditions', align: 'left', sortable: false, priority: 2 },

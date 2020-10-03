@@ -674,6 +674,10 @@ def get_scores():
               description: which direction to sort. Default: DESC
               type: string
               required: false
+            - name: timecourse
+              description: If "true" then include info for sparklines. Default: true
+              type: string
+              required: false
         responses:
             200:
                 description: JSON list of scores and associated metadata
@@ -696,6 +700,12 @@ def get_scores():
         min_score = 0.0
     else:
         min_score = float(min_score)
+
+    timecourse = request.args.get('timecourse')
+    if timecourse is None or timecourse == "true":
+        timecourse = True
+    else:
+        timecourse = False
 
     plate_ids = request.args.get('plate_ids').split(',')
     if plate_ids == ['']:
@@ -777,9 +787,15 @@ def get_scores():
     params.append(int(limit))
     params.append(int(offset))
 
+    if timecourse:
+        sql = sql_paginated_with_timecourse
+    else:
+        sql = sql_paginated_without_timecourse
+
     resultproxy = polo_connection.execute(
-        sql_paginated.format(temperature_filter=temperature_filter, drop_filter=drop_filter, score_filter=score_filter,
-                             rank_method=method, min_score=min_score, query_placeholders=query_placeholders), params)
+        sql.format(temperature_filter=temperature_filter, drop_filter=drop_filter, score_filter=score_filter,
+                   rank_method=method, min_score=min_score, query_placeholders=query_placeholders), params
+    )
 
     scores = get_result(resultproxy)
 
