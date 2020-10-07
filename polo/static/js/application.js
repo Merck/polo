@@ -1,63 +1,176 @@
-$( document ).ready(function() {
+$(document).ready(function() {
     var source_id;
-    var algo_name;
     var faves_only = false;
     var debug = false;
 
+    // these thresholds dictate coloring of the crystal score:
+    //      RED < low_score_max < BLACK < high_score_min < GREEN
     var high_score_min = 0.6;
     var low_score_max = 0.2;
 
+    /***********************************************************************************/
+    var rockmaker_firsttime = true;
     var rockmaker_dropdown = $('#rockmaker_dropdown').dropdown({
         dataSource: '/api/sources/',
         valueField: 'id',
         textField: 'name',
         uiLibrary: 'bootstrap',
         iconsLibrary: 'fontawesome',
+        dataBound: function(e) {
+            if (localStorage.getItem("source_id")) {
+                source_id = Number(localStorage.getItem("source_id"));
+            } else {
+                source_id = 1;
+            }
+            rockmaker_dropdown.value(source_id);
+            rockmaker_firsttime = false;
+        },
         change: function(e) {
-            source_id = e.target.options[e.target.selectedIndex].value;
+            if (!rockmaker_firsttime) {
+                source_id = rockmaker_dropdown.value();
+                localStorage.setItem("source_id", source_id);
+            }
             $('#search-text').val('');
             build_tree(source_id);
         }
     });
 
+    /***********************************************************************************/
+    var scorealgo_firsttime = true;
     var scorealgo_dropdown = $('#scorealgo_dropdown').dropdown({
         dataSource: '/api/algorithms/',
         valueField: 'id',
         textField: 'name',
         uiLibrary: 'bootstrap',
         iconsLibrary: 'fontawesome',
+        dataBound: function(e) {
+            var saved = localStorage.getItem("scorealgo");
+            if (saved) {
+                scorealgo_dropdown.value(saved);
+            }
+            algo_name = scorealgo_dropdown.value();
+            scorealgo_firsttime = false;
+        },
         change: function(e) {
-            algo_name = e.target.options[e.target.selectedIndex].value;
+            if (!scorealgo_firsttime) {
+                algo_name = scorealgo_dropdown.value();
+                localStorage.setItem("scorealgo", algo_name);
+            }
         }
     });
 
+    /***********************************************************************************/
+    var scoretype_data = [
+            { value: "date_imaged", text: "Most recent score", selected: true},
+            { value: "crystal", text: "Highest score"},
+        ];
+
+    // load setting if present, and select saved value
+    var scoretype = localStorage.getItem("scoretype");
+    if (scoretype) {
+        scoretype_data = scoretype_data.map(function(e) {
+            if (e.value == scoretype) {
+                e.selected = true;
+            } else {
+                delete e.selected;
+            }
+            return e;
+        });
+    }
     var scoretype_dropdown = $('#scoretype_dropdown').dropdown({
-        valueField: 'id',
-        textField: 'name',
+        dataSource: scoretype_data,
         uiLibrary: 'bootstrap',
-        iconsLibrary: 'fontawesome'
+        iconsLibrary: 'fontawesome',
     });
+    scoretype_dropdown.on('change', function(e) {
+        localStorage.setItem("scoretype", scoretype_dropdown.value());
+    })
 
+    /***********************************************************************************/
+    var numrows_data = [
+            { value: "10", text: "10 (good for slow connections)"},
+            { value: "30", text: "30"},
+            { value: "100", text: "100", selected: true},
+            { value: "300", text: "300"},
+        ];
+
+    // load setting if present, and select saved value
+    var numrows = localStorage.getItem("numrows");
+    if (numrows) {
+        numrows_data = numrows_data.map(function(e) {
+            if (e.value == numrows) {
+                e.selected = true;
+            } else {
+                delete e.selected;
+            }
+            return e;
+        });
+    }
     var numrows_dropdown = $('#numrows_dropdown').dropdown({
-        valueField: 'id',
-        textField: 'name',
+        dataSource: numrows_data,
         uiLibrary: 'bootstrap',
-        iconsLibrary: 'fontawesome'
+        iconsLibrary: 'fontawesome',
     });
+    numrows_dropdown.on('change', function(e) {
+        localStorage.setItem("numrows", numrows_dropdown.value());
+    })
 
+    /***********************************************************************************/
+    var min_score_data = [
+            { value: "0.8", text: "0.8 (most stringent)", selected: true},
+            { value: "0.5", text: "0.5"},
+            { value: "0.3", text: "0.1"},
+            { value: "0.0", text: "0.0 (all scores)", selected: true},
+        ];
+
+    // load setting if present, and select saved value
+    var min_score = localStorage.getItem("min_score");
+    if (min_score) {
+        min_score_data = min_score_data.map(function(e) {
+            if (e.value == min_score) {
+                e.selected = true;
+            } else {
+                delete e.selected;
+            }
+            return e;
+        });
+    }
     var min_score_dropdown = $('#min_score_dropdown').dropdown({
-        valueField: 'id',
-        textField: 'name',
+        dataSource: min_score_data,
         uiLibrary: 'bootstrap',
-        iconsLibrary: 'fontawesome'
+        iconsLibrary: 'fontawesome',
     });
+    min_score_dropdown.on('change', function(e) {
+        localStorage.setItem("min_score", min_score_dropdown.value());
+    })
 
+    /***********************************************************************************/
+    var showsparklines_data = [
+            { value: "Yes", text: "Yes (slower to load)", selected: true},
+            { value: "No", text: "No"},
+        ];
+
+    // load setting if present, and select saved value
+    var showsparklines = localStorage.getItem("showsparklines");
+    if (showsparklines) {
+        showsparklines_data = showsparklines_data.map(function(e) {
+            if (e.value == showsparklines) {
+                e.selected = true;
+            } else {
+                delete e.selected;
+            }
+            return e;
+        });
+    }
     var showsparklines_dropdown = $('#showsparklines_dropdown').dropdown({
-        valueField: 'id',
-        textField: 'name',
+        dataSource: showsparklines_data,
         uiLibrary: 'bootstrap',
-        iconsLibrary: 'fontawesome'
+        iconsLibrary: 'fontawesome',
     });
+    showsparklines_dropdown.on('change', function(e) {
+        localStorage.setItem("showsparklines", showsparklines_dropdown.value());
+    })
+    /***********************************************************************************/
 
     var tree = $('#tree').tree();
     var grid = $('#grid').grid();
@@ -71,7 +184,9 @@ $( document ).ready(function() {
         grid: grid,
         timecourse_grid,
         faves: faves,
-        rockmaker_dropdown: rockmaker_dropdown
+        rockmaker_dropdown: rockmaker_dropdown,
+        scorealgo_dropdown: scorealgo_dropdown,
+        showsparklines_dropdown: showsparklines_dropdown
     }
 
     function highlight(e){
@@ -117,8 +232,7 @@ $( document ).ready(function() {
         $('#load_checked').hide();
 
         // set RockMaker instance
-        e = document.getElementById('rockmaker_dropdown');
-        source_id = e.options[e.selectedIndex].value;
+        source_id = rockmaker_dropdown.value();
 
         // get user query
         q = $('#search-text').val();
@@ -203,18 +317,18 @@ $( document ).ready(function() {
 
     }
     function load_plates() {
-        load_grid(tree.getCheckedNodes().filter(n => tree.getDataById(n).node_type == 'ExperimentPlate').map(i => tree.getDataById(i).plate_id));
+        var plates = tree.getCheckedNodes().filter(n => tree.getDataById(n).node_type == 'ExperimentPlate').map(i => tree.getDataById(i).plate_id);
+        if (plates === undefined || plates.length == 0) {
+            alert("Check at least one plate before loading");
+            return false;
+        }
+        load_grid(plates);
     }
     function load_grid(plate_ids) {
-        //var plate_ids = tree.getCheckedNodes().filter(n => tree.getDataById(n).node_type == 'ExperimentPlate').map(i => tree.getDataById(i).plate_id)
-        var sel1 = document.getElementById('scoretype_dropdown');
-        var method = sel1.options[sel1.selectedIndex].value;
-        var sel2 = document.getElementById('numrows_dropdown');
-        var numrows = sel2.options[sel2.selectedIndex].value;
-        var sel3 = document.getElementById('min_score_dropdown');
-        var min_score = sel3.options[sel3.selectedIndex].value;
-        var sel4 = document.getElementById('showsparklines_dropdown');
-        var show_sparklines = sel4.options[sel4.selectedIndex].value;
+        var method = scoretype_dropdown.value();
+        var numrows = numrows_dropdown.value();
+        var min_score = min_score_dropdown.value();
+        var show_sparklines = showsparklines_dropdown.value();
         if (show_sparklines=="Yes") {
             var crystal_template = '<div class=bignum>{crystal}</div><span class="inlinesparkline" values="{all_crystal_scores}"></span>';
             var other_template = '<div class=bignum>{other}</div><span class="inlinesparkline" values="{all_other_scores}"></span>';
@@ -504,8 +618,7 @@ $( document ).ready(function() {
     $('#load_checked').on('click tap', function() { load_plates() });
     $('#clear-search-button').on('click tap', function() {
         $('#search-text').val('');
-        e = document.getElementById('rockmaker_dropdown');
-        build_tree(e.options[e.selectedIndex].value);
+        build_tree(rockmaker_dropdown.value());
     });
     $('#download_grid').on('click tap', function() {
         // convert favorites to something more excel-friendly...
@@ -529,6 +642,12 @@ $( document ).ready(function() {
     $('div#image_navigation div#up').on('click tap', function() { previous_image() });
     $('div#image_navigation div#down').on('click tap', function() { next_image() });
     $('div#image_navigation div#set-favorite').on('click tap', function() { toggle_favorite() });
+    $('#restore-settings').on('click tap', function() {
+        if (confirm("This will restore settings and reload the page. Continue?")) {
+            localStorage.clear();
+            location.reload();
+        }
+    });
 
     // KEYBOARD SHORTCUTS
     var Key = {
