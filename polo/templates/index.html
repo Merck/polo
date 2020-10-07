@@ -146,42 +146,31 @@
                                     <select id="rockmaker_dropdown" width="350"></select>
                                 </div>
                                 <div class="polo-setting">
-                                    Which score to show for a drop*
-                                    <select id="scoretype_dropdown" width="350">
-                                        <option value="date_imaged" selected>Most recent score</option>
-                                        <option value="crystal">Highest score</option>
-                                    </select>
+                                    Which score to show for a drop
+                                    <select id="scoretype_dropdown" width="350"></select>
                                 </div>
                                 <div class="polo-setting">
-                                    Rows per page*
-                                    <select id="numrows_dropdown" width="350">
-                                        <option value="10">10 (good for slow connections)</option>
-                                        <option value="30">30</option>
-                                        <option value="100" selected>100 (default)</option>
-                                        <option value="300">300</option>
-                                    </select>
+                                    Rows per page
+                                    <select id="numrows_dropdown" width="350"></select>
                                 </div>
                                 <div class="polo-setting">
-                                    Minimum crystal score to show*
-                                    <select id="min_score_dropdown" width="350">
-                                        <option value="0.8">0.8 (most stringent)</option>
-                                        <option value="0.5">0.5</option>
-                                        <option value="0.1">0.1</option>
-                                        <option value="0.0" selected>All scores (least stringent)</option>
-                                    </select>
+                                    Minimum crystal score to show
+                                    <select id="min_score_dropdown" width="350"></select>
                                 </div>
                                 <div class="polo-setting">
                                     Show timecourse of scores in table?
-                                    <select id="showsparklines_dropdown" width="350">
-                                        <option value="Yes">Yes (slower to load)</option>
-                                        <option value="No">No (faster)</option>
-                                    </select>
+                                    <select id="showsparklines_dropdown" width="350"></select>
                                 </div>
                                 <div class="polo-setting">
-                                    Scoring algorithm (# scores)*
+                                    Scoring algorithm (# scores)
                                     <select id="scorealgo_dropdown" width="350"></select>
                                 </div>
-                                <div style="clear: both; float: right;">* must reload plates to take effect
+                                <div style="clear: both; float: right;">Reload plates for settings to take effect</div>
+                                <div style="clear: both; float: right;">
+                                    Restore settings to defaults:
+                                    <button id="restore-settings" class="btn btn-primary btn-sm">
+                                        <i class="glyphicon glyphicon-repeat"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -231,7 +220,7 @@
                                     </li>
                                     <li>
                                         Check boxes for one or more plates, then click the blue button
-                                        below the list. Plates must be checked and visible to get loaded.
+                                        below the list. <i>Plates must be checked and visible to get loaded</i>.
                                     </li>
                                     <li>
                                         Use left and right arrows to move between tabs:

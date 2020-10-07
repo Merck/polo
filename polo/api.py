@@ -486,10 +486,14 @@ def get_sources():
     """
     for source in sources:
         resultproxy = polo_connection.execute(sql, source['id'])
-        source['name'] += " ({})".format(get_result(resultproxy)[0]['d'])
+        if 'demo' in request.args or app.config['DEMO']:
+            source['name'] = "XXXXX ({})".format(get_result(resultproxy)[0]['d'])
+        else:
+            source['name'] += " ({})".format(get_result(resultproxy)[0]['d'])
 
     sources[0]['selected'] = True
     polo_connection.close()
+
     return jsonify(sources)
 
 
@@ -510,7 +514,10 @@ def get_algorithms():
     algos = get_result(resultproxy)
     algos[0]['selected'] = True
     for algo in algos:
-        algo['name'] += " ({:,})".format(algo['count'])
+        if 'demo' in request.args or app.config['DEMO']:
+            algo['name'] = "XXXXX ({:,})".format(algo['count'])
+        else:
+            algo['name'] += " ({:,})".format(algo['count'])
 
     polo_connection.close()
     return jsonify(algos)
