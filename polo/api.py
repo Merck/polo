@@ -8,7 +8,9 @@ to the frontend code, specifically found in polo/static/js/application.js.
 
 import re
 import shlex
-from flask import request, jsonify, abort
+import csv
+import io
+from flask import request, jsonify, abort, make_response
 
 from polo import app
 from polo.common import get_result, merge_dicts
@@ -105,6 +107,66 @@ def status():
                 connection.close()
 
     return jsonify({'results': results, 'errors': errors})
+
+
+@app.route('/api/disputes/', methods=['GET'])
+def get_annotations():
+    """
+    get:
+        summary: Return all manually-annotated image metadata
+        description: Return all manually-annotated image metadata
+        parameters:
+        responses:
+            200:
+                description: JSON-formatted information
+    """
+    # TODO add filters for CPXOD, limit by plate_id(s)
+    results = {}
+    errors = []
+
+    output_format = request.args.get('format')
+    if output_format is None:
+        output_format = 'JSON'
+    else:
+        output_format = output_format.upper()
+
+    if output_format not in ['JSON', 'CSV']:
+        errors.append("Format must be either JSON (default) or CSV")
+        return jsonify({'results': results, 'errors': errors})
+
+    try:
+        connection = polo_engine.connect()
+        sql = '''select plate_id, well_num, drop_num, scored_by, classification, disputed_by, manual_call,
+                        CONCAT(url_prefix, relative_path) as url
+                   from disputes d, image_scores i, sources s
+                  where d.image_score_id = i.id
+                    and i.source_id = s.id
+              '''
+        resultproxy = connection.execute(sql)
+        results = get_result(resultproxy)
+        connection.close()
+    except:
+        errors.append("Problem connecting to POLO database")
+    finally:
+        if 'connection' in locals():
+            connection.close()
+
+    if output_format == 'JSON':
+        return jsonify({'results': results, 'errors': errors})
+    elif output_format == 'CSV':
+        si = io.StringIO()
+        writer = csv.DictWriter(si,
+                                dialect='excel',
+                                fieldnames=['plate_id', 'well_num', 'drop_num', 'classification', 'manual_call', 'scored_by', 'disputed_by', 'url']
+                                )
+        writer.writeheader()
+        for result in results:
+            writer.writerow(result)
+
+        output = make_response(si.getvalue())
+        output.headers["Content-Disposition"] = "attachment; filename=POLO_annotations.csv"
+        output.headers["Content-type"] = "text/csv"
+        return output
 
 
 @app.route('/api/dispute/', methods=['POST'])
