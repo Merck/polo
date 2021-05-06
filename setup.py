@@ -11,7 +11,7 @@ setup(
     zip_safe=False,
     install_requires=[
         'Flask==1.1.1',
-        'Flask-Cors==3.0.8',
+        'Flask-Cors==3.0.9',
         'SQLAlchemy==1.3.10',
         'mysqlclient==1.3.14',
         'pyodbc==4.0.27',
