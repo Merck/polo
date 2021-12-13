@@ -1,4 +1,9 @@
 $(document).ready(function() {
+     $("#sidebar").resizable({
+       handleSelector: ".splitter",
+       resizeHeight: false
+     });
+
     var source_id;
     var faves_only = false;
     var debug = false;
@@ -117,7 +122,7 @@ $(document).ready(function() {
 
     /***********************************************************************************/
     var min_score_data = [
-            { value: "0.8", text: "0.8 (most stringent)", selected: true},
+            { value: "0.8", text: "0.8 (most stringent)"},
             { value: "0.5", text: "0.5"},
             { value: "0.3", text: "0.1"},
             { value: "0.0", text: "0.0 (all scores)", selected: true},
@@ -145,9 +150,37 @@ $(document).ready(function() {
     })
 
     /***********************************************************************************/
+    var scalebarsize_data = [
+            { value: "200", text: "200 µm"},
+            { value: "100", text: "100 µm", selected: true},
+            { value: "50", text: "50 µm"},
+        ];
+
+    // load setting if present, and select saved value
+    var scalebarsize = localStorage.getItem("scalebarsize");
+    if (scalebarsize) {
+        scalebarsize_data = scalebarsize_data.map(function(e) {
+            if (e.value == scalebarsize) {
+                e.selected = true;
+            } else {
+                delete e.selected;
+            }
+            return e;
+        });
+    }
+    var scalebarsize_dropdown = $('#scalebarsize_dropdown').dropdown({
+        dataSource: scalebarsize_data,
+        uiLibrary: 'bootstrap',
+        iconsLibrary: 'fontawesome',
+    });
+    scalebarsize_dropdown.on('change', function(e) {
+        localStorage.setItem("scalebarsize", scalebarsize_dropdown.value());
+    })
+
+    /***********************************************************************************/
     var showsparklines_data = [
-            { value: "Yes", text: "Yes (slower to load)", selected: true},
-            { value: "No", text: "No"},
+            { value: "No", text: "No", selected: true},
+            { value: "Yes", text: "Yes (slower to load)"},
         ];
 
     // load setting if present, and select saved value
@@ -289,7 +322,9 @@ $(document).ready(function() {
             tree.destroy();
         }
 
-        if (typeof(folder) == "undefined" || folder == "None") {
+        if (typeof(source_id) == "undefined") {
+            tree_data_source = '/api/tree/';
+        } else if (typeof(folder) == "undefined" || folder == "None") {
             tree_data_source = '/api/tree/?source_id='+source_id;
         } else {
             tree_data_source = '/api/tree/?folder='+folder+'&source_id='+source_id;
@@ -649,6 +684,88 @@ $(document).ready(function() {
         }
     });
 
+    // SCALEBAR LOGIC
+    // draggable without the need for JQueryUI via https://stackoverflow.com/questions/2424191/how-do-i-make-an-element-draggable-in-jquery
+    // rotating element inspired from https://jsfiddle.net/o5jjosvu/65/
+
+    function get_degrees(e, mouse_x, mouse_y) {
+        var radius = e.outerWidth() / 2;
+        var center_x = e.offset().left + radius;
+        var center_y = e.offset().top + radius;
+        var radians = Math.atan2(mouse_x - center_x, mouse_y - center_y);
+        var degrees = Math.round((radians * (180 / Math.PI) * -1) + 100);
+        return degrees;
+    }
+
+    function handle_mousedown(e){
+        if (e.ctrlKey) {
+            // rotate
+            var scalebar = $(this);
+            // Calculate the mouse position in degrees
+            var click_degrees = get_degrees(scalebar, e.pageX, e.pageY);
+            $(document).bind('mousemove', click_degrees, function(event) {
+                // Calculate the mouse move position, removing starting point
+                var degrees = get_degrees(scalebar, event.pageX, event.pageY) - click_degrees;
+                scalebar.css('transform', 'rotate('+degrees+'deg)');
+            });
+            $(document).on('mouseup', function() {
+                $(document).unbind('mousemove');
+            });
+        } else {
+            // translate
+            window.my_dragging = {};
+            my_dragging.pageX0 = e.pageX;
+            my_dragging.pageY0 = e.pageY;
+            my_dragging.elem = this;
+            my_dragging.offset0 = $(this).offset();
+            function handle_dragging(e){
+                var left = my_dragging.offset0.left + (e.pageX - my_dragging.pageX0);
+                var top = my_dragging.offset0.top + (e.pageY - my_dragging.pageY0);
+                $(my_dragging.elem).offset({top: top, left: left});
+            }
+            function handle_mouseup(e){
+                $('body')
+                .off('mousemove', handle_dragging)
+                .off('mouseup', handle_mouseup);
+            }
+            $('body')
+            .on('mouseup', handle_mouseup)
+            .on('mousemove', handle_dragging);
+        }
+    }
+
+    function update_scalebar() {
+        // TODO: if the image does not change, there is no need to go to the network
+        var i = $('#current_image');
+        try {
+            var url_re = RegExp('batchID_(\\d+).*profileID_(\\d+).*d\\d_r(\\d+)_');
+            var m = url_re.exec(i.attr('src'));
+            var batch_id=m[1];
+            var profile_id=m[2];
+            var region_id=m[3];
+        } catch(err) {
+            console.log("ERROR getting image information for scalebar")
+            return
+        }
+
+        $.get('/api/image_info/?source_id='+source_id+'&batch_id='+batch_id+'&profile_id='+profile_id+'&region_id='+region_id)
+            .done(function(data) {
+                var pixel_size = data.pixel_size;
+                var bar_length = scalebarsize_dropdown.value();
+                var w = (Number(bar_length)/Number(pixel_size))*(i[0].clientWidth/i[0].naturalWidth);
+                $('#scalebar').width(w);
+                $('#bar-legend').html(bar_length + " &micro;m");
+                $('#scalebar').show();
+                var left_pos=i[0].clientWidth-Math.max($('#scalebar').width(),50)-10;
+                $('#scalebar').css({left: left_pos+'px', top: '', bottom: '25px'});
+                $('#scalebar').css('transform','rotate(0deg)');
+            })
+            .fail(function() {
+                console.log("error getting pixel size");
+                $('#scalebar').hide();
+            });
+    }
+
     // KEYBOARD SHORTCUTS
     var Key = {
       LEFT:   37,
@@ -665,6 +782,7 @@ $(document).ready(function() {
       P:      80,   // dispute: precipitate
       X:      88,   // dispute: crystal
       O:      79,   // dispute: other
+      S:      83,   // dispute: salt (or other false positive)
     };
     function _addEventListener(evt, element, fn) {
       if (window.addEventListener) {
@@ -730,12 +848,14 @@ $(document).ready(function() {
         case Key.HOME:
           if (currentTabName() == 'tab-image') {
             grid.setSelected(1);
+            update_scalebar();
             show_favorites();
           }
           break;
         case Key.END:
           if (currentTabName() == 'tab-image') {
             grid.setSelected(grid.count());
+            update_scalebar();
             show_favorites();
           }
           break;
@@ -775,6 +895,11 @@ $(document).ready(function() {
             dispute("O");
           }
           break;
+        case Key.S:
+          if (currentTabName() == 'tab-image') {
+            dispute("S");
+          }
+          break;
 
         default:
           break;
@@ -804,6 +929,12 @@ $(document).ready(function() {
           } else {
             rows[1].scrollIntoView();
           }
+        } else if (target == 'tab-image') {
+            update_scalebar();
+            // disable images loading in all grids
+            $('#grid img').each(function() {this.src = ''});
+            $('#timecourse_grid img').each(function() {this.src = ''});
+            $('#allimage_grid img').each(function() {this.src = ''});
         } else if (target == 'tab-timecourse') {
             load_timecourse();
             // reenable all images in timecourse_grid
@@ -820,11 +951,6 @@ $(document).ready(function() {
             // disable all images in other grids to avoid unnecessary downloads of a potentially long list of images
             $('#grid img').each(function() {this.src = ''});
             $('#timecourse_grid img').each(function() {this.src = this.getAttribute('oldsrc')});
-        } else {
-            // disable images loading in all grids
-            $('#grid img').each(function() {this.src = ''});
-            $('#timecourse_grid img').each(function() {this.src = ''});
-            $('#allimage_grid img').each(function() {this.src = ''});
         }
     }
     $('#tabs a').on('click tap', function(e) {
@@ -838,13 +964,18 @@ $(document).ready(function() {
         }
     });
 
+    $(window).resize(function(){
+        update_scalebar();
+    });
+
     // start on help tab
     changeTab("tab-help");
+    $('#scalebar').mousedown(handle_mousedown); // make scalebar draggable
+    $('#scalebar').hide();
 
     // if source and plate(s) specified in URL, load them
     if (typeof(plate_ids) != "undefined" && plate_ids != "None" && typeof(load_source) != "undefined" && load_source != "None") {
         source_id = load_source;
         load_grid(plate_ids);
     }
-
 });

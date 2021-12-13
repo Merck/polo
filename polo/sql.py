@@ -74,7 +74,8 @@ sql_all = """
       AND source_id = s.id
     """
 
-sql_set_sort_order = "SET @sort_dir = %s; SET @pwd_rank = 0;"
+sql_set_sort_order = "SET @sort_dir = %s"
+sql_set_pwd_rank = "SET @pwd_rank = 0"
 sql_paginated_without_timecourse = """
     SELECT CONCAT(CAST(plate_num AS CHAR), ',', CAST(plate_id as CHAR), ',', barcode) as plate_name,
            ranked.id,
@@ -519,4 +520,22 @@ sql_other_images = """
       AND Well.WellNumber = ?
       AND WellDrop.DropNumber = ?
     ORDER BY date_imaged_orig DESC
+"""
+
+sql_image_info = """
+SELECT CaptureProfile.Name AS image_type,
+       Image.PixelSize     AS pixel_size
+FROM Region
+       INNER JOIN CaptureResult ON CaptureResult.RegionID = Region.ID
+       INNER JOIN CaptureProfileVersion ON CaptureProfileVersion.ID = CaptureResult.CaptureProfileVersionID
+       INNER JOIN CaptureProfile ON CaptureProfile.ID = CaptureProfileVersion.CaptureProfileID
+       INNER JOIN Image ON Image.CaptureResultID = CaptureResult.ID
+       INNER JOIN ImageType ON ImageType.ID = Image.ImageTypeID
+       INNER JOIN ImageStore on ImageStore.ID = Image.ImageStoreID
+       INNER JOIN ImageBatch on ImageBatch.ID = CaptureResult.ImageBatchID
+       INNER JOIN ImagingTask on ImagingTask.ID = ImageBatch.ImagingTaskID
+WHERE ImageType.ShortName = 'ef'
+  AND Region.ID = ?
+  AND ImageBatch.ID = ?
+  AND CaptureProfile.ID = ?
 """

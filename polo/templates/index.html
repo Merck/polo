@@ -10,6 +10,9 @@
     <!-- -------------------- jQuery Sparklines --------- -->
     <script src="/static/js/jquery.sparkline.min.js"></script>
 
+    <!-- -------------------- jQuery Resizable --------- -->
+    <script src="/static/js/jquery-resizable.js"></script>
+
     <!-- -------------------- Bootstrap -------------------- -->
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="/static/css/bootstrap.min.css">
@@ -37,6 +40,8 @@
         var plate_ids = '{{ plate_ids }}';
         var load_source = '{{ load_source }}';
         var message = '{{ message }}';
+
+
     </script>
 </head>
 <body>
@@ -64,6 +69,7 @@
             Clear list and load checked plates &nbsp;&nbsp;<span class="glyphicon glyphicon-arrow-right"></span>
         </button>
     </div>
+    <div class="splitter" title="Drag to resize"></div>
     <div class="section middle col-xs-9" id="main">
         <div class="tab" role="tabpanel">
             <ul id="tabs">
@@ -78,7 +84,7 @@
                 <div id="tab-help">
                     {% if demo_mode == True %}
                     <div class="alert alert-info alert-dismissible" role="alert">
-                        POLO is running in demonstration mode. Names, projects, experimental information will be hidden
+                        POLO is running in demonstration mode. Names, projects, and experimental information are hidden.
                         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -160,6 +166,10 @@
                                 <div class="polo-setting">
                                     Show timecourse of scores in table?
                                     <select id="showsparklines_dropdown" width="350"></select>
+                                </div>
+                                <div class="polo-setting">
+                                    Scalebar size
+                                    <select id="scalebarsize_dropdown" width="350"></select>
                                 </div>
                                 <div class="polo-setting">
                                     Scoring algorithm (# scores)
@@ -248,8 +258,10 @@
                                                     <li>Use the spacebar to toggle the image as a favorite</li>
                                                     <li>Type right-arrow to get a timecourse from the current drop</li>
                                                     <li>Manually annotate an image by typing C, P, X, O for clear,
-                                                        precipitate, crystal, other. Or just type D to dispute the
-                                                        score. Case-insensitive.
+                                                        precipitate, crystal, other. You can also type S for salt/false
+                                                        positive.
+                                                        Or just type D to dispute the score. Annotations are
+                                                        case-insensitive.
                                                     </li>
                                                 </ul>
                                             </li>
@@ -285,12 +297,14 @@
                             <div class="panel-body">
                                 <ul>
                                     {% if demo_mode == True %}
-                                    <li>POLO is running in demonstration mode. Names, projects, experimental information
-                                        will be hidden
+                                    <li>POLO is running in demonstration mode. Names, projects, and experimental
+                                        information
+                                        are hidden
                                     </li>
                                     {% endif %}
-				    <li>
-                                        Download manual annotations as <a href="/api/disputes" target="_blank">JSON (into new tab)</a>
+                                    <li>
+                                        Download manual annotations as <a href="/api/disputes" target="_blank">JSON
+                                        (into new tab)</a>
                                         or <a href="/api/disputes?format=csv">CSV (download)</a>
                                     </li>
                                 </ul>
@@ -310,10 +324,14 @@
                 </div>
                 <div id="tab-image">
                     <div id="image-container">
-                        <img id="current_image" src="/static/images/no_image.png">
+                        <img id="current_image" draggable=false src="/static/images/no_image.png">
                         <div id="current_image_crystal_score"></div>
                         <div id="current_image_plate_path"></div>
                         <div id="current_image_well_drop"></div>
+                    </div>
+                    <div id="scalebar" title="Drag to move. Control-drag to rotate.">
+                        <div id="bar"></div>
+                        <div id="bar-legend">100 &micro;m</div>
                     </div>
                     <div id="current_info"></div>
                     <div id="image_navigation">

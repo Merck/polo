@@ -121,6 +121,7 @@ def get_annotations():
                 description: JSON-formatted information
     """
     # TODO add filters for CPXOD, limit by plate_id(s)
+    #      allow download in different formats, including JSON and CSV
     results = {}
     errors = []
 
@@ -157,7 +158,8 @@ def get_annotations():
         si = io.StringIO()
         writer = csv.DictWriter(si,
                                 dialect='excel',
-                                fieldnames=['plate_id', 'well_num', 'drop_num', 'classification', 'manual_call', 'scored_by', 'disputed_by', 'url']
+                                fieldnames=['plate_id', 'well_num', 'drop_num', 'classification', 'manual_call',
+                                            'scored_by', 'disputed_by', 'url']
                                 )
         writer.writeheader()
         for result in results:
@@ -481,7 +483,7 @@ def get_tree():
                 description: A JSON object containing tree information below specified or default node
     """
     source_id = request.args.get('source_id')
-    if source_id is None:
+    if source_id is None or source_id == 'undefined':
         source_id = 1
     else:
         source_id = int(source_id)
@@ -536,6 +538,13 @@ def get_sources():
     sql = "select * from sources"
     resultproxy = polo_connection.execute(sql)
     sources = get_result(resultproxy)
+
+    # exclude any sources in the RM_BYPASS list, if it is defined
+    try:
+        filtered_sources = [source for source in sources if source['id'] not in app.config['RM_BYPASS'] ]
+        sources = filtered_sources
+    except:
+        pass
 
     # add last score date from each source to the source name.
     # This *should* be done in a single query, but it's been too slow.
@@ -689,6 +698,64 @@ def get_other():
     rm_connection.close()
 
     return jsonify(scores)
+
+
+@app.route('/api/image_info/', methods=['GET'])
+def get_image_info():
+    """
+    get:
+        summary: Get information for a specific image
+        description: Get image type and pixel size
+        parameters:
+            - name: source_id
+              description: primary key in POLO database for RockMaker instance to search. Default: 1
+              type: integer
+              required: false
+            - name: region_id
+              description:
+              type: integer
+              required: true
+            - name: batch_id
+              description:
+              type: integer
+              required: true
+            - name: profile_id
+              description:
+              type: integer
+              required: true
+        responses:
+            200:
+                description: JSON hash of image metadata, including pixel_size (microns per pixel)
+    """
+
+    source_id = request.args.get('source_id')
+    if source_id is None:
+        source_id = 1
+    else:
+        source_id = int(source_id)
+
+    try:
+        region_id = request.args.get('region_id')
+        profile_id = request.args.get('profile_id')
+        batch_id = request.args.get('batch_id')
+
+        rm_connection = rm_engines[source_id].connect()
+        resultproxy = rm_connection.execute(sql_image_info, int(region_id), int(batch_id), int(profile_id))
+        info = get_result(resultproxy)[0]
+
+        info['region_id'] = region_id
+        info['profile_id'] = profile_id
+        info['batch_id'] = batch_id
+
+        return jsonify(info)
+    except TypeError:
+        return abort(400, "Must specify region_id, profile_id, and batch_id")
+    except KeyError:
+        return abort(400, "Must specify an existing source_id")
+    except IndexError:
+        return abort(400, "Possible mismatch between batch_id and region_id. Please double-check.")
+    finally:
+        rm_connection.close()
 
 
 @app.route('/api/scores/', methods=['GET'])
@@ -851,6 +918,7 @@ def get_scores():
 
     # SET SORT ORDER BASED AND GET PAGINATED REQUEST
     polo_connection.execute(sql_set_sort_order, sort_dir)
+    polo_connection.execute(sql_set_pwd_rank)
     params = [source_id, algo_name]
     params.extend(plate_ids)
     params.append(int(limit))

@@ -10,7 +10,8 @@ import urllib.parse
 from sqlalchemy import create_engine
 from polo import app
 
-polo_engine = create_engine('mysql://%s' % app.config['POLO_CONN'], pool_pre_ping=True)
+#polo_engine = create_engine('mysql://%s' % app.config['POLO_CONN'], pool_pre_ping=True)
+polo_engine = create_engine('mysql+pymysql://%s' % app.config['POLO_CONN'], pool_pre_ping=True)
 
 rm_engines = {}
 for i in app.config['RM_CONN'].keys():

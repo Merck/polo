@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='POLO',
-    version='0.1.0',
+    version='0.2.0',
     author='Charles A. Lesburg',
     author_email='charles.lesburg@merck.com',
     license='See LICENSE file',

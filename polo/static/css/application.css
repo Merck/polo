@@ -1,5 +1,6 @@
 html, body {
     height: 100vh;
+    overflow-y: hidden;
 }
 
 .left {
@@ -14,9 +15,10 @@ html, body {
   background-color: #CAB;
 }
 
-.main-wrapper {
+/* .main-wrapper {
   height: 100%
 }
+*/
 
 .section {
   height: 100vh;
@@ -108,6 +110,9 @@ ul.gj-list-bootstrap li {
 
 #image-container {
     position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
 }
 
 #current_image_crystal_score {
@@ -206,9 +211,11 @@ div#favorite {
     overflow-y: auto;
 }
 
+/*
 #sidebar {
     position: relative;
 }
+*/
 
 div#search-area {
     margin: 10px 0 10px 0;
@@ -400,4 +407,74 @@ div.medium-image div.image-info-top {
 
 div.medium-image div.image-info-bottom {
     bottom: 0;
+}
+
+div#scalebar {
+    width: 0;
+    position: relative;
+    z-index: 100;
+    cursor: move;
+    user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+
+div#scalebar div#bar {
+    width: 100%;
+    height: 5px;
+    background: black;
+    box-shadow: 0 0 20px 0px white;
+}
+
+div#scalebar div#bar-legend {
+    width: 100%;
+    text-align: center;
+    font-size: 0.8em;
+    color: black;
+    font-weight: bold;
+    white-space: nowrap;
+    text-shadow: 0 0 20px white;
+}
+
+/* jquery-resizable via https://codepen.io/rstrahl/pen/eJZQej */
+.main-wrapper {
+  display: flex;
+  flex-direction: row;
+  border: 1px solid silver;
+  overflow: hidden;
+
+  /* avoid browser level touch actions */
+  xtouch-action: none;
+}
+
+#sidebar {
+  position: relative;
+  flex: 0 0 auto;
+  /* only manually resize */
+  padding: 10px;
+  width: 300px;
+  min-height: 200px;
+  min-width: 150px;
+  white-space: nowrap;
+  //background: #838383;
+  overflow-y: hidden;
+  color: white;
+}
+
+.splitter {
+  flex: 0 0 auto;
+  width: 10px;
+  background: url(/static/images/grip.png) center center no-repeat #535353;
+  min-height: 200px;
+  cursor: col-resize;
+}
+
+#main {
+  flex: 1 1 auto;
+  /* resizable */
+  padding: 10px;
+  width: 100%;
+  min-height: 200px;
+  min-width: 200px;
+  //background: #eee;
 }
