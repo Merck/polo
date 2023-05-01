@@ -10,7 +10,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        'Flask==1.1.1',
+        'Flask==2.3.2',
         'Flask-Cors==3.0.9',
         'SQLAlchemy==1.3.10',
         'mysqlclient==1.3.14',
